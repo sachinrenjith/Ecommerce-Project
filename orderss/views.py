@@ -144,68 +144,132 @@ def place_order(request, total=0, quantity=0):
             return redirect('checkout')
 
 
-def success(request):
+# def success(request):
     
-    # Get the payment details from the request
-    razorpay_payment_id = request.GET.get("razorpay_payment_id")
-    razorpay_order_id = request.GET.get("razorpay_order_id")
-    razor_pay_status = request.GET.get("razor_pay_status")
-    amount_paid = request.GET.get("amount_paid")
-    order_number = request.GET.get("order_number")
-    full_name = request.GET.get("full_name")
-    full_address = request.GET.get("full_address")
-    state = request.GET.get("state")
-    city= request.GET.get("city")
+#     # Get the payment details from the request
+#     razorpay_payment_id = request.GET.get("razorpay_payment_id")
+#     razorpay_order_id = request.GET.get("razorpay_order_id")
+#     razor_pay_status = request.GET.get("razor_pay_status")
+#     amount_paid = request.GET.get("amount_paid")
+#     order_number = request.GET.get("order_number")
+#     full_name = request.GET.get("full_name")
+#     full_address = request.GET.get("full_address")
+#     state = request.GET.get("state")
+#     city= request.GET.get("city")
 
      
-      # Storing Transaction Details In Payment Model
-    payment = Payment.objects.create(
-        user=request.user,
-        razorpay_payment_id=razorpay_payment_id,
-        amount_paid=amount_paid,
-        razor_pay_status='Success',
-        razorpay_order_id=order_number
-    )
+#       # Storing Transaction Details In Payment Model
+#     payment = Payment.objects.create(
+#         user=request.user,
+#         razorpay_payment_id=razorpay_payment_id,
+#         amount_paid=amount_paid,
+#         razor_pay_status='Success',
+#         razorpay_order_id=order_number
+#     )
 
-    order = get_object_or_404(Order, user=request.user, is_ordered=False, order_number=order_number)
-    order.payment = payment
-    order.is_ordered = True
-    order.save()
+#     order = get_object_or_404(Order, user=request.user, is_ordered=False, order_number=order_number)
+#     order.payment = payment
+#     order.is_ordered = True
+#     order.save()
 
 
-     # Move The Cart Items To Order Product Table
-    cart_items = CartItem.objects.filter(user=request.user)
+#      # Move The Cart Items To Order Product Table
+#     cart_items = CartItem.objects.filter(user=request.user)
 
-    for item in cart_items:
-        orderproduct = OrderProduct()
-        orderproduct.order_id = order.id
-        orderproduct.payment = payment
-        orderproduct.user_id = request.user.id
-        orderproduct.product_id = item.product_id
-        orderproduct.quantity = item.quantity
-        orderproduct.product_price = item.product.price
-        orderproduct.ordered = True
-        orderproduct.save()
+#     for item in cart_items:
+#         orderproduct = OrderProduct()
+#         orderproduct.order_id = order.id
+#         orderproduct.payment = payment
+#         orderproduct.user_id = request.user.id
+#         orderproduct.product_id = item.product_id
+#         orderproduct.quantity = item.quantity
+#         orderproduct.product_price = item.product.price
+#         orderproduct.ordered = True
+#         orderproduct.save()
 
-        # Reduce The Qantity Of The Sold Products
-        product = Product.objects.get(id=item.product_id)
-        product.stock -= item.quantity
-        product.save()
+#         # Reduce The Qantity Of The Sold Products
+#         product = Product.objects.get(id=item.product_id)
+#         product.stock -= item.quantity
+#         product.save()
    
 
-    context = {
-        "order_number": order_number,
-        "amount_paid": amount_paid,
-        "razorpay_payment_id": razorpay_payment_id,
-        "full_name": full_name,
-        "full_address":  full_address,
-        "state": state,
-        "city": city,
+#     context = {
+#         "order_number": order_number,
+#         "amount_paid": amount_paid,
+#         "razorpay_payment_id": razorpay_payment_id,
+#         "full_name": full_name,
+#         "full_address":  full_address,
+#         "state": state,
+#         "city": city,
         
-    }
-    return render(request, "orders/order_complete.html", context)
+#     }
+#     return render(request, "orders/order_complete.html", context)
 
-    
+def success(request):
+      razorpay_payment_id = request.GET.get("razorpay_payment_id")
+      order_number = request.GET.get("order_number")
+      amount_paid = request.GET.get("amount_paid")
+
+
+      try:
+          # Storing Transaction Details In Payment Model
+         payment = Payment.objects.create(
+             user=request.user,
+             razorpay_payment_id=razorpay_payment_id,
+             amount_paid=amount_paid,
+             razor_pay_status='Success',
+             razorpay_order_id=order_number
+         )
+         order = get_object_or_404(Order, user=request.user, is_ordered=False, order_number=order_number)
+         order.payment = payment
+         order.is_ordered = True
+         order.save()
+
+         # Move The Cart Items To Order Product Table
+         cart_items = CartItem.objects.filter(user=request.user)
+         print(cart_items)
+         for item in cart_items:
+             
+             print("Product ID:", item.product_id)
+             print("Quantity:", item.quantity)
+             orderproduct = OrderProduct()
+             orderproduct.order_id = order.id
+             orderproduct.payment = payment
+             orderproduct.user_id = request.user.id
+             orderproduct.product_id = item.product_id
+             orderproduct.quantity = item.quantity
+             orderproduct.product_price = item.product.price
+             orderproduct.ordered = True
+             orderproduct.save()
+             print(item)
+             # Reduce The Qantity Of The Sold Products
+             product = Product.objects.get(id=item.product_id)
+             product.stock -= item.quantity
+             product.save()
+
+             order=Order.objects.get(order_number=order_number,is_ordered=True)
+             ordered_products = OrderProduct.objects.filter(order_id=order.id)
+
+             subtotal = 0
+             for i in ordered_products:
+                 subtotal += i.product_price * i.quantity
+
+
+             payment = Payment.objects.get(razorpay_payment_id=razorpay_payment_id)
+
+             context = {
+                 'order': order,
+                 'ordered_products':ordered_products,
+                 'order_number':order.order_number,
+                 'razorpay_payment_id':payment.razorpay_payment_id,
+                 'payment':payment,
+                 'subtotal':subtotal,
+             }
+             return render(request, 'orders/order_complete.html',context)
+
+      except(Payment.DoesNotExist, Order.DoesNotExist):
+          return redirect('home')
+            
 
 
   
