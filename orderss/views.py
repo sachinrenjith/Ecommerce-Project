@@ -128,25 +128,25 @@ def success(request):
              product.stock -= item.quantity
              product.save()
 
-             order=Order.objects.get(order_number=order_number,is_ordered=True)
-             ordered_products = OrderProduct.objects.filter(order_id=order.id)
+         order=Order.objects.get(order_number=order_number,is_ordered=True)
+         ordered_products = OrderProduct.objects.filter(order_id=order.id)
 
-             subtotal = 0
-             for i in ordered_products:
-                 subtotal += i.product_price * i.quantity
+         subtotal = 0
+         for i in ordered_products:
+            subtotal += i.product_price * i.quantity
 
 
-             payment = Payment.objects.get(razorpay_payment_id=razorpay_payment_id)
+         payment = Payment.objects.get(razorpay_payment_id=razorpay_payment_id)
 
-             context = {
-                 'order': order,
-                 'ordered_products':ordered_products,
-                 'order_number':order.order_number,
-                 'razorpay_payment_id':payment.razorpay_payment_id,
-                 'payment':payment,
-                 'subtotal':subtotal,
-             }
-             return render(request, 'orders/order_complete.html',context)
+         context = {
+            'order': order,
+            'ordered_products':ordered_products,
+            'order_number':order.order_number,
+            'razorpay_payment_id':payment.razorpay_payment_id,
+            'payment':payment,
+            'subtotal':subtotal,
+            }
+         return render(request, 'orders/order_complete.html',context)
 
       except(Payment.DoesNotExist, Order.DoesNotExist):
           return redirect('home')
