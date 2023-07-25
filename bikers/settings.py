@@ -86,26 +86,25 @@ AUTH_USER_MODEL = 'accounts.Account'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'EcommerceDB',
-        'USER': 'postgres',
-        'PASSWORD':os.getenv('PASSWORD'),
-        'HOST': 'localhost'
-    }
-}
 # DATABASES = {
 #     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
+#          'ENGINE': 'django.db.backends.postgresql',
 #         'NAME': 'EcommerceDB',
-#         'USER': 'mysuperuser',
-#         'PASSWORD': os.getenv('PASSWORD'),
-#         'HOST': 'ecommercedb.cq4a59y5ypdq.eu-north-1.rds.amazonaws.com',
-#         'PORT': '5432',
+#         'USER': 'postgres',
+#         'PASSWORD':os.getenv('PASSWORD'),
+#         'HOST': 'localhost'
 #     }
 # }
-
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'ecommercedb',
+        'USER': 'mysuperuser',
+        'PASSWORD': os.getenv('PASSWORD'),
+        'HOST': 'ecommercedb.cq4a59y5ypdq.eu-north-1.rds.amazonaws.com',
+        'PORT': '5432',
+    }
+}
 
 
 # Password validation
